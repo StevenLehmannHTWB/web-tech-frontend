@@ -33,9 +33,14 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { useRoute } from 'vue-router'
 
 // 🧾 URL zum Backend
 const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
+
+//Name der Liste
+const route = useRoute()
+const currentListName = ref<string>(route.params.shoppingList as string)
 
 // 🔠 Typdefinition für Items (Frontend-Modell)
 interface Item {
@@ -43,6 +48,7 @@ interface Item {
   name: string
   category: string
   purchased: boolean
+  shoppingList: string
 }
 
 // 🔠 Optional: Originalstruktur vom Server, falls unterschiedlich
@@ -52,6 +58,7 @@ interface ServerItem {
   category: string
   quantity: number
   purchased: boolean
+  shoppingList: string
 }
 
 // 📝 Eingabefelder
@@ -66,11 +73,13 @@ onMounted(() => {
   axios
     .get<ServerItem[]>(API_URL)
     .then((response) => {
-      items.value = response.data.map((item): Item => ({
+      const filtered = response.data.filter((item) => item.shoppingList === currentListName.value)
+      items.value = filtered.map((item): Item => ({
         id: item.id,
         name: item.name,
         category: item.category,
         purchased: item.purchased,
+        shoppingList: item.shoppingList,
       }))
     })
     .catch((err) => {
@@ -89,6 +98,7 @@ function addItem() {
       category: itemCategory.value,
       quantity: 1, // quantity ignorieren wir im Frontend
       purchased: false,
+      shoppingList: currentListName.value,
     })
     .then((response) => {
       const newItem = response.data
@@ -97,6 +107,7 @@ function addItem() {
         name: newItem.name,
         category: newItem.category,
         purchased: newItem.purchased,
+        shoppingList: newItem.shoppingList,
       })
       itemName.value = ''
     })
