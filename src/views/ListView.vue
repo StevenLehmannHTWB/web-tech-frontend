@@ -58,6 +58,7 @@ interface ServerItem {
   category: string
   quantity: number
   purchased: boolean
+  price: number
   shoppingList: string
 }
 
@@ -108,7 +109,6 @@ function addItem() {
         name: newItem.name,
         category: newItem.category,
         purchased: newItem.purchased,
-        price: newItem.price,
         shoppingList: newItem.shoppingList,
       })
       itemName.value = ''
