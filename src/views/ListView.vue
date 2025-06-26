@@ -92,14 +92,14 @@ onMounted(() => {
 function addItem() {
   const name = itemName.value.trim()
   if (!name || items.value.find((i: Item) => i.name === name)) return
-
+  console.log (currentListName.value)
   axios
     .post<ServerItem>(API_URL, {
       name: name,
       category: itemCategory.value,
       quantity: 1, // quantity ignorieren wir im Frontend
       purchased: false,
-      price: 1,
+      price: null,
       shoppingList: currentListName.value,
     })
     .then((response) => {
