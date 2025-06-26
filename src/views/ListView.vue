@@ -99,8 +99,6 @@ function addItem() {
       category: itemCategory.value,
       quantity: 1, // quantity ignorieren wir im Frontend
       purchased: false,
-      price: null,
-      shoppingList: currentListName.value,
     })
     .then((response) => {
       const newItem = response.data
