@@ -48,7 +48,9 @@ interface Item {
   name: string
   category: string
   purchased: boolean
-  shoppingList: string
+  shoppingList: {
+    name: string
+  }
 }
 
 // 🔠 Optional: Originalstruktur vom Server, falls unterschiedlich
@@ -59,7 +61,9 @@ interface ServerItem {
   quantity: number
   purchased: boolean
   price: number
-  shoppingList: string
+  shoppingList: {
+    name: string
+  }
 }
 
 // 📝 Eingabefelder
@@ -74,7 +78,7 @@ onMounted(() => {
   axios
     .get<ServerItem[]>(API_URL)
     .then((response) => {
-      const filtered = response.data.filter((item) => item.shoppingList === currentListName.value)
+      const filtered = response.data.filter((item) => item.shoppingList.name === currentListName.value)
       items.value = filtered.map((item): Item => ({
         id: item.id,
         name: item.name,
@@ -99,6 +103,9 @@ function addItem() {
       category: itemCategory.value,
       quantity: 1, // quantity ignorieren wir im Frontend
       purchased: false,
+      shoppingList: {
+        name: currentListName.value,
+      },
     })
     .then((response) => {
       const newItem = response.data
