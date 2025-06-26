@@ -5,7 +5,7 @@ import ListView from '@/views/ListView.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
-  { path: '/list/:listName', name: 'ListView', component: ListView, props: true },
+  { path: '/list/:shoppingList', name: 'ListView', component: ListView, props: true },
 ]
 
 const router = createRouter({
