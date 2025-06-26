@@ -18,7 +18,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-const API_URL = 'https://api.deine-seite.de/shopping-list'
+const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
 const router = useRouter()
 
 const lists = ref<string[]>([])
