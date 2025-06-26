@@ -14,32 +14,38 @@
     </div>
 
     <ul>
-      <li v-for="item in itemList" :key="item.name">
-        <label :class="{ checked: item.checked }">
+      <li v-for="item in items" :key="item.id">
+        <label :class="{ checked: item.purchased }">
           <input
             type="checkbox"
-            :checked="item.checked"
-            @change="item.checked = !item.checked"
+            :checked="item.purchased"
+            @change="togglePurchased(item)"
           />
           {{ item.name }} ({{ item.category }})
         </label>
+        <button class="delete-button" @click="deleteItem(item)">🗑️</button>
       </li>
-
     </ul>
+
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+// 🧾 URL zum Backend
 const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
 
-interface ItemData {
+// 🔠 Typdefinition für Items (Frontend-Modell)
+interface Item {
+  id: number
+  name: string
   category: string
-  checked: boolean
+  purchased: boolean
 }
 
+// 🔠 Optional: Originalstruktur vom Server, falls unterschiedlich
 interface ServerItem {
   id: number
   name: string
@@ -48,65 +54,83 @@ interface ServerItem {
   purchased: boolean
 }
 
+// 📝 Eingabefelder
 const itemName = ref<string>('')
 const itemCategory = ref<string>('Obst')
 
-const items = ref<Record<string, ItemData>>({})
+// 📦 Artikelzustand (komplett vom Server synchronisiert)
+const items = ref<Item[]>([])
 
-const itemList = computed(() =>
-  Object.entries(items.value).map(([name, data]) => ({
-    name,
-    ...data,
-  }))
-)
-
-function addItem() {
-  const name = itemName.value.trim()
-  if (!name || items.value[name]) return
-
-  // Neues Item lokal speichern
-  items.value[name] = {
-    category: itemCategory.value,
-    checked: false,
-  }
-
-  // POST an Backend senden
-  axios
-    .post(API_URL, {
-      name: name,
-      category: itemCategory.value,
-      quantity: 1, // immer 1, wird im Frontend ignoriert
-      purchased: false,
-    })
-    .catch((err) => {
-      console.error('Fehler beim Speichern des Artikels:', err)
-    })
-
-  itemName.value = ''
-}
-
-// Daten vom Server laden (PULL)
+// 🔄 Artikel beim Laden vom Server abrufen (PULL)
 onMounted(() => {
   axios
     .get<ServerItem[]>(API_URL)
     .then((response) => {
-      const data = response.data
-      const loadedItems: Record<string, ItemData> = {}
-
-      for (const item of data) {
-        loadedItems[item.name] = {
-          category: item.category,
-          checked: item.purchased,
-        }
-      }
-
-      items.value = loadedItems
+      items.value = response.data.map((item): Item => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        purchased: item.purchased,
+      }))
     })
     .catch((err) => {
       console.error('Fehler beim Laden der Einkaufsliste:', err)
     })
 })
 
+// ➕ Artikel hinzufügen (POST an Backend)
+function addItem() {
+  const name = itemName.value.trim()
+  if (!name || items.value.find((i: Item) => i.name === name)) return
+
+  axios
+    .post<ServerItem>(API_URL, {
+      name: name,
+      category: itemCategory.value,
+      quantity: 1, // quantity ignorieren wir im Frontend
+      purchased: false,
+    })
+    .then((response) => {
+      const newItem = response.data
+      items.value.push({
+        id: newItem.id,
+        name: newItem.name,
+        category: newItem.category,
+        purchased: newItem.purchased,
+      })
+      itemName.value = ''
+    })
+    .catch((err) => {
+      console.error('Fehler beim Speichern des Artikels:', err)
+    })
+}
+
+// ✅ purchased-Status (Gekauft) per Checkbox aktualisieren (PATCH)
+function togglePurchased(item: Item) {
+  const updated = !item.purchased
+  axios
+    .patch(`${API_URL}/${item.id}`, {
+      purchased: updated,
+    })
+    .then(() => {
+      item.purchased = updated
+    })
+    .catch((err) => {
+      console.error('Fehler beim Aktualisieren:', err)
+    })
+}
+
+// ❌ Artikel löschen (DELETE)
+function deleteItem(item: Item) {
+  axios
+    .delete(`${API_URL}/${item.id}`)
+    .then(() => {
+      items.value = items.value.filter((i: Item) => i.id !== item.id)
+    })
+    .catch((err) => {
+      console.error('Fehler beim Löschen:', err)
+    })
+}
 </script>
 
 <style scoped>
@@ -150,10 +174,24 @@ li {
   margin-bottom: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 6px;
+  color: black
+}
+
+h1 {
+  color: black
 }
 
 .checked {
   text-decoration: line-through;
   color: gray;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: 1rem;
 }
 </style>
