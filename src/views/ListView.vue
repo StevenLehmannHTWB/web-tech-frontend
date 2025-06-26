@@ -98,6 +98,7 @@ function addItem() {
       category: itemCategory.value,
       quantity: 1, // quantity ignorieren wir im Frontend
       purchased: false,
+      price: 1,
       shoppingList: currentListName.value,
     })
     .then((response) => {
@@ -107,6 +108,7 @@ function addItem() {
         name: newItem.name,
         category: newItem.category,
         purchased: newItem.purchased,
+        price: newItem.price,
         shoppingList: newItem.shoppingList,
       })
       itemName.value = ''
