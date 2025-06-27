@@ -26,7 +26,6 @@
         <button class="delete-button" @click="deleteItem(item)">🗑️</button>
       </li>
     </ul>
-
   </div>
 </template>
 
@@ -35,26 +34,18 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRoute } from 'vue-router'
 
-// 🧾 URL zum Backend
 const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
-
-//Name der Liste
 const route = useRoute()
-const currentListName = ref<string>(route.params.shoppingList as string)
+const currentListId = Number(route.params.id)
 
-// 🔠 Typdefinition für Items (Frontend-Modell)
 interface Item {
   id: number
   name: string
   category: string
   purchased: boolean
-  shoppingList: {
-    id: number
-    name: string
-  }
+  shoppingListId: number
 }
 
-// 🔠 Optional: Originalstruktur vom Server, falls unterschiedlich
 interface ServerItem {
   id: number
   name: string
@@ -68,25 +59,21 @@ interface ServerItem {
   }
 }
 
-// 📝 Eingabefelder
 const itemName = ref<string>('')
 const itemCategory = ref<string>('Obst')
-
-// 📦 Artikelzustand (komplett vom Server synchronisiert)
 const items = ref<Item[]>([])
 
-// 🔄 Artikel beim Laden vom Server abrufen (PULL)
 onMounted(() => {
   axios
     .get<ServerItem[]>(API_URL)
     .then((response) => {
-      const filtered = response.data.filter((item) => item.shoppingList.name === currentListName.value)
+      const filtered = response.data.filter((item) => item.shoppingList?.id === currentListId)
       items.value = filtered.map((item): Item => ({
         id: item.id,
         name: item.name,
         category: item.category,
         purchased: item.purchased,
-        shoppingList: item.shoppingList,
+        shoppingListId: item.shoppingList.id,
       }))
     })
     .catch((err) => {
@@ -94,21 +81,17 @@ onMounted(() => {
     })
 })
 
-// ➕ Artikel hinzufügen (POST an Backend)
 function addItem() {
   const name = itemName.value.trim()
   if (!name || items.value.find((i: Item) => i.name === name)) return
-  console.log (currentListName.value)
+
   axios
     .post<ServerItem>(API_URL, {
       name: name,
       category: itemCategory.value,
-      quantity: 1, // quantity ignorieren wir im Frontend
+      quantity: 1,
       purchased: false,
-      shoppingList: {
-        id: number,
-        name: currentListName.value,
-      },
+      shoppingList: { id: currentListId },
     })
     .then((response) => {
       const newItem = response.data
@@ -117,7 +100,7 @@ function addItem() {
         name: newItem.name,
         category: newItem.category,
         purchased: newItem.purchased,
-        shoppingList: newItem.shoppingList,
+        shoppingListId: newItem.shoppingList.id,
       })
       itemName.value = ''
     })
@@ -126,12 +109,15 @@ function addItem() {
     })
 }
 
-// ✅ purchased-Status (Gekauft) per Checkbox aktualisieren (PATCH)
 function togglePurchased(item: Item) {
   const updated = !item.purchased
   axios
-    .patch(`${API_URL}/${item.id}`, {
+    .put(`${API_URL}/${item.id}`, {
+      name: item.name,
+      category: item.category,
+      quantity: 1,
       purchased: updated,
+      shoppingList: { id: item.shoppingListId },
     })
     .then(() => {
       item.purchased = updated
@@ -141,7 +127,6 @@ function togglePurchased(item: Item) {
     })
 }
 
-// ❌ Artikel löschen (DELETE)
 function deleteItem(item: Item) {
   axios
     .delete(`${API_URL}/${item.id}`)

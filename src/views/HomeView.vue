@@ -1,63 +1,75 @@
+<template>
+  <div class="container">
+    <h1>Alle Einkaufslisten</h1>
+
+    <div class="input-section">
+      <input v-model="newListName" type="text" placeholder="Neue Liste erstellen" />
+      <button @click="createList">Liste hinzufügen</button>
+    </div>
+
+    <ul>
+      <li v-for="list in lists" :key="list.id">
+        <router-link :to="`/liste/${list.id}`">{{ list.name }}</router-link>
+      </li>
+    </ul>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+
+const API_URL = 'https://webtech-backend-o434.onrender.com/api/lists'
 
 interface ShoppingList {
   id: number
   name: string
-  plannedDate?: string
 }
 
-const API_URL = 'https://webtech-backend-o434.onrender.com/api/lists'
-const lists = ref<ShoppingList[]>([])
 const newListName = ref('')
-const router = useRouter()
+const lists = ref<ShoppingList[]>([])
 
-const fetchLists = async () => {
-  try {
-    const response = await axios.get<ShoppingList[]>(API_URL)
-    lists.value = response.data
-  } catch (err) {
-    console.error('Fehler beim Laden der Listen:', err)
-  }
+function loadLists() {
+  axios.get<ShoppingList[]>(API_URL)
+    .then(response => {
+      lists.value = response.data
+    })
+    .catch(error => console.error('Fehler beim Laden der Listen:', error))
 }
 
-const createList = async () => {
+function createList() {
   const name = newListName.value.trim()
   if (!name) return
 
-  try {
-    const response = await axios.post<ShoppingList>(API_URL, {
-      name: name,
-      plannedDate: null,
+  axios.post(API_URL, { name })
+    .then(response => {
+      lists.value.push(response.data)
+      newListName.value = ''
     })
-    const newList = response.data
-    lists.value.push(newList)
-    newListName.value = ''
-    router.push(`/list/${newList.id}`)
-  } catch (err) {
-    console.error('Fehler beim Erstellen der Liste:', err)
-  }
+    .catch(error => console.error('Fehler beim Erstellen der Liste:', error))
 }
 
-onMounted(fetchLists)
+onMounted(loadLists)
 </script>
 
-<template>
-  <div>
-    <h1>Einkaufslisten</h1>
-    <ul>
-      <li v-for="list in lists" :key="list.id">
-        <router-link :to="`/list/${list.id}`">{{ list.name }}</router-link>
-      </li>
-    </ul>
-    <input v-model="newListName" placeholder="Neue Liste" />
-    <button @click="createList">Erstellen</button>
-  </div>
-</template>
-
 <style scoped>
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  font-family: Arial, sans-serif;
+}
+.input-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+input {
+  flex: 1;
+  padding: 0.5rem;
+}
+button {
+  padding: 0.5rem 1rem;
+}
 ul {
   list-style: none;
   padding: 0;
