@@ -67,13 +67,13 @@ onMounted(() => {
   axios
     .get<ServerItem[]>(API_URL)
     .then((response) => {
-      const filtered = response.data.filter((item) => item.shoppingList?.id === currentListId)
+      const filtered = response.data.filter((item) => item.shoppingListId === currentListId)
       items.value = filtered.map((item): Item => ({
         id: item.id,
         name: item.name,
         category: item.category,
         purchased: item.purchased,
-        shoppingListId: item.shoppingList.id,
+        shoppingListId: item.shoppingListId,
       }))
     })
     .catch((err) => {
