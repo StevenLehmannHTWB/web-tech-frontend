@@ -53,10 +53,7 @@ interface ServerItem {
   quantity: number
   purchased: boolean
   price: number
-  shoppingList: {
-    id: number
-    name: string
-  }
+  shoppingListId: number
 }
 
 const itemName = ref<string>('')
@@ -91,7 +88,7 @@ function addItem() {
       category: itemCategory.value,
       quantity: 1,
       purchased: false,
-      shoppingList: { id: currentListId },
+      shoppingListId: currentListId,
     })
     .then((response) => {
       const newItem = response.data
@@ -100,7 +97,7 @@ function addItem() {
         name: newItem.name,
         category: newItem.category,
         purchased: newItem.purchased,
-        shoppingListId: newItem.shoppingList.id,
+        shoppingListId: newItem.shoppingListId,
       })
       itemName.value = ''
     })
@@ -117,7 +114,7 @@ function togglePurchased(item: Item) {
       category: item.category,
       quantity: 1,
       purchased: updated,
-      shoppingList: { id: item.shoppingListId },
+      shoppingListId: item.shoppingListId,
     })
     .then(() => {
       item.purchased = updated
