@@ -1,57 +1,114 @@
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import axios from 'axios'
+<template>
+  <div class="container">
+    <h1>Meine Einkaufsliste</h1>
 
+    <div class="input-section">
+      <input v-model="itemName" type="text" placeholder="Produktname" />
+      <select v-model="itemCategory">
+        <option value="Obst">Obst</option>
+        <option value="Gemüse">Gemüse</option>
+        <option value="Getränke">Getränke</option>
+        <option value="Sonstiges">Sonstiges</option>
+      </select>
+      <button @click="addItem">Hinzufügen</button>
+    </div>
+
+    <ul>
+      <li v-for="item in items" :key="item.id">
+        <label :class="{ checked: item.purchased }">
+          <input
+            type="checkbox"
+            :checked="item.purchased"
+            @change="togglePurchased(item)"
+          />
+          {{ item.name }} ({{ item.category }})
+        </label>
+        <button class="delete-button" @click="deleteItem(item)">🗑️</button>
+      </li>
+    </ul>
+
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { useRoute } from 'vue-router'
+
+// 🧾 URL zum Backend
+const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
+
+//Name der Liste
+const route = useRoute()
+const currentListName = ref<string>(route.params.shoppingList as string)
+
+// 🔠 Typdefinition für Items (Frontend-Modell)
+interface Item {
+  id: number
+  name: string
+  category: string
+  purchased: boolean
+  shoppingList: {
+    id: number
+    name: string
+  }
+}
+
+// 🔠 Optional: Originalstruktur vom Server, falls unterschiedlich
 interface ServerItem {
   id: number
   name: string
   category: string
   quantity: number
   purchased: boolean
-  shoppingList: { id: number }
+  price: number
+  shoppingList: {
+    id: number
+    name: string
+  }
 }
 
-interface Item {
-  id: number
-  name: string
-  category: string
-  purchased: boolean
-  shoppingListId: number
-}
+// 📝 Eingabefelder
+const itemName = ref<string>('')
+const itemCategory = ref<string>('Obst')
 
-const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
-const route = useRoute()
-const currentListId = Number(route.params.id)
-
+// 📦 Artikelzustand (komplett vom Server synchronisiert)
 const items = ref<Item[]>([])
-const itemName = ref('')
-const itemCategory = ref('Sonstiges')
 
+// 🔄 Artikel beim Laden vom Server abrufen (PULL)
 onMounted(() => {
-  axios.get<ServerItem[]>(API_URL).then((response) => {
-    const filtered = response.data.filter((item) => item.shoppingList?.id === currentListId)
-    items.value = filtered.map((item) => ({
-      id: item.id,
-      name: item.name,
-      category: item.category,
-      purchased: item.purchased,
-      shoppingListId: item.shoppingList.id,
-    }))
-  })
+  axios
+    .get<ServerItem[]>(API_URL)
+    .then((response) => {
+      const filtered = response.data.filter((item) => item.shoppingList.name === currentListName.value)
+      items.value = filtered.map((item): Item => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        purchased: item.purchased,
+        shoppingList: item.shoppingList,
+      }))
+    })
+    .catch((err) => {
+      console.error('Fehler beim Laden der Einkaufsliste:', err)
+    })
 })
 
+// ➕ Artikel hinzufügen (POST an Backend)
 function addItem() {
   const name = itemName.value.trim()
-  if (!name || items.value.find((i) => i.name === name)) return
-
+  if (!name || items.value.find((i: Item) => i.name === name)) return
+  console.log (currentListName.value)
   axios
     .post<ServerItem>(API_URL, {
       name: name,
       category: itemCategory.value,
-      quantity: 1,
+      quantity: 1, // quantity ignorieren wir im Frontend
       purchased: false,
-      shoppingList: { id: currentListId },
+      shoppingList: {
+        id: number,
+        name: currentListName.value,
+      },
     })
     .then((response) => {
       const newItem = response.data
@@ -60,7 +117,7 @@ function addItem() {
         name: newItem.name,
         category: newItem.category,
         purchased: newItem.purchased,
-        shoppingListId: newItem.shoppingList.id,
+        shoppingList: newItem.shoppingList,
       })
       itemName.value = ''
     })
@@ -69,27 +126,27 @@ function addItem() {
     })
 }
 
+// ✅ purchased-Status (Gekauft) per Checkbox aktualisieren (PATCH)
 function togglePurchased(item: Item) {
+  const updated = !item.purchased
   axios
-    .put(`${API_URL}/${item.id}`, {
-      ...item,
-      quantity: 1,
-      shoppingList: { id: item.shoppingListId },
-      purchased: !item.purchased,
+    .patch(`${API_URL}/${item.id}`, {
+      purchased: updated,
     })
     .then(() => {
-      item.purchased = !item.purchased
+      item.purchased = updated
     })
     .catch((err) => {
       console.error('Fehler beim Aktualisieren:', err)
     })
 }
 
+// ❌ Artikel löschen (DELETE)
 function deleteItem(item: Item) {
   axios
     .delete(`${API_URL}/${item.id}`)
     .then(() => {
-      items.value = items.value.filter((i) => i.id !== item.id)
+      items.value = items.value.filter((i: Item) => i.id !== item.id)
     })
     .catch((err) => {
       console.error('Fehler beim Löschen:', err)
@@ -97,38 +154,65 @@ function deleteItem(item: Item) {
 }
 </script>
 
-<template>
-  <div>
-    <h1>Einkaufsliste</h1>
-    <ul>
-      <li v-for="item in items" :key="item.id">
-        <input type="checkbox" :checked="item.purchased" @change="() => togglePurchased(item)" />
-        {{ item.name }} ({{ item.category }})
-        <button @click="() => deleteItem(item)">Löschen</button>
-      </li>
-    </ul>
-    <input v-model="itemName" placeholder="Neuer Artikel" />
-    <select v-model="itemCategory">
-      <option>Getränke</option>
-      <option>Obst</option>
-      <option>Gemüse</option>
-      <option>Milchprodukte</option>
-      <option>Fleisch</option>
-      <option>Sonstiges</option>
-    </select>
-    <button @click="addItem">Speichern</button>
-  </div>
-</template>
-
 <style scoped>
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.input-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+input[type='text'],
+select {
+  padding: 0.5rem;
+  font-size: 1rem;
+  flex: 1;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
 ul {
   list-style: none;
   padding: 0;
 }
+
 li {
-  margin: 0.5rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  background: #fff;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: black
+}
+
+h1 {
+  color: black
+}
+
+.checked {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: 1rem;
 }
 </style>
