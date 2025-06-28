@@ -14,7 +14,7 @@
         <button @click="addItem">Hinzufügen</button>
       </div>
 
-      <!--<ul>
+      <ul>
         <ItemRow
           v-for="item in items"
           :key="item.id"
@@ -23,24 +23,22 @@
           @toggle="togglePurchased"
         />
       </ul>
-      -->
-      <ul>
-        <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-      </ul>
     </div>
   </AppLayout>
 </template>
 
 <script lang="ts" setup>
-import ItemRow from '@/components/ItemRow.vue'
-import AppLayout from '@/components/AppLayout.vue'
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
+import axios from 'axios'
+
+import AppLayout from '@/components/AppLayout.vue'
+import ItemRow from '@/components/ItemRow.vue'
 
 const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
+
 const route = useRoute()
-const currentListId = Number(route.params.id)
+const currentListId = ref<number>(NaN)
 const listName = ref<string>('Meine Einkaufsliste')
 
 interface Item {
@@ -65,8 +63,20 @@ const itemName = ref<string>('')
 const itemCategory = ref<string>('Obst')
 const items = ref<Item[]>([])
 
-onMounted(() => {
-  axios.get(`https://webtech-backend-o434.onrender.com/api/lists/${currentListId}`)
+// Reaktiv auf Änderung von route.params.id reagieren
+watchEffect(() => {
+  const idParam = route.params.id
+  if (typeof idParam === 'string') {
+    const id = Number(idParam)
+    if (!isNaN(id)) {
+      currentListId.value = id
+      loadData(id)
+    }
+  }
+})
+
+function loadData(listId: number) {
+  axios.get(`https://webtech-backend-o434.onrender.com/api/lists/${listId}`)
     .then((response) => {
       listName.value = response.data.name
     })
@@ -74,10 +84,9 @@ onMounted(() => {
       console.error('Fehler beim Laden der Liste:', err)
     })
 
-  axios
-    .get<ServerItem[]>(API_URL)
+  axios.get<ServerItem[]>(API_URL)
     .then((response) => {
-      const filtered = response.data.filter((item) => item.shoppingListId === currentListId)
+      const filtered = response.data.filter((item) => item.shoppingListId === listId)
       items.value = filtered.map((item): Item => ({
         id: item.id,
         name: item.name,
@@ -87,22 +96,21 @@ onMounted(() => {
       }))
     })
     .catch((err) => {
-      console.error('Fehler beim Laden der Einkaufsliste:', err)
+      console.error('Fehler beim Laden der Artikel:', err)
     })
-})
+}
 
 function addItem() {
   const name = itemName.value.trim()
-  if (!name || items.value.find((i: Item) => i.name === name)) return
+  if (!name || items.value.find((i) => i.name === name)) return
 
-  axios
-    .post<ServerItem>(API_URL, {
-      name: name,
-      category: itemCategory.value,
-      quantity: 1,
-      purchased: false,
-      shoppingListId: currentListId,
-    })
+  axios.post<ServerItem>(API_URL, {
+    name,
+    category: itemCategory.value,
+    quantity: 1,
+    purchased: false,
+    shoppingListId: currentListId.value,
+  })
     .then((response) => {
       const newItem = response.data
       items.value.push({
@@ -121,14 +129,13 @@ function addItem() {
 
 function togglePurchased(item: Item) {
   const updated = !item.purchased
-  axios
-    .put(`${API_URL}/${item.id}`, {
-      name: item.name,
-      category: item.category,
-      quantity: 1,
-      purchased: updated,
-      shoppingListId: item.shoppingListId,
-    })
+  axios.put(`${API_URL}/${item.id}`, {
+    name: item.name,
+    category: item.category,
+    quantity: 1,
+    purchased: updated,
+    shoppingListId: item.shoppingListId,
+  })
     .then(() => {
       item.purchased = updated
     })
@@ -138,10 +145,9 @@ function togglePurchased(item: Item) {
 }
 
 function deleteItem(item: Item) {
-  axios
-    .delete(`${API_URL}/${item.id}`)
+  axios.delete(`${API_URL}/${item.id}`)
     .then(() => {
-      items.value = items.value.filter((i: Item) => i.id !== item.id)
+      items.value = items.value.filter((i) => i.id !== item.id)
     })
     .catch((err) => {
       console.error('Fehler beim Löschen:', err)
@@ -184,30 +190,7 @@ ul {
   padding: 0;
 }
 
-li {
-  background: #fff;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  color: black
-}
-
 h1 {
-  color: black
-}
-
-.checked {
-  text-decoration: line-through;
-  color: gray;
-}
-
-.delete-button {
-  background: none;
-  border: none;
-  color: red;
-  font-size: 1.1rem;
-  cursor: pointer;
-  margin-left: 1rem;
+  color: black;
 }
 </style>
