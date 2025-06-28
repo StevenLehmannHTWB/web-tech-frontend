@@ -25,4 +25,8 @@ defineEmits(['delete'])
   border-radius: 6px;
   margin-bottom: 0.5rem;
 }
+
+router-link {
+  color: black;
+}
 </style>

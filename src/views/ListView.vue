@@ -15,23 +15,20 @@
       </div>
 
       <ul>
-        <li v-for="item in items" :key="item.id">
-          <label :class="{ checked: item.purchased }">
-            <input
-              type="checkbox"
-              :checked="item.purchased"
-              @change="togglePurchased(item)"
-            />
-            {{ item.name }} ({{ item.category }})
-          </label>
-          <button class="delete-button" @click="deleteItem(item)">❌</button>
-        </li>
+        <ItemRow
+          v-for="item in items"
+          :key="item.id"
+          :item="item"
+          @delete="deleteItem"
+          @toggle="togglePurchased"
+        />
       </ul>
     </div>
   </AppLayout>
 </template>
 
 <script lang="ts" setup>
+import ItemRow from '@/components/ItemRow.vue'
 import AppLayout from '@/components/AppLayout.vue'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
