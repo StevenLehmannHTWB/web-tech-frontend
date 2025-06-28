@@ -46,4 +46,8 @@ defineEmits(['delete', 'toggle'])
   font-size: 1.1rem;
   cursor: pointer;
 }
+
+label {
+  color: black;
+}
 </style>

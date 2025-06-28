@@ -9,11 +9,15 @@
       </div>
 
       <ul>
-        <ShoppingListItem
-          v-for="list in lists"
-          :key="list.id"
-          :list="list"
-        />
+        <li v-if="isLoading">🔄 Einkaufslisten werden geladen...</li>
+        <li v-else-if="lists.length === 0">📭 Noch keine Einkaufslisten vorhanden.</li>
+        <template v-else>
+          <ShoppingListItem
+            v-for="list in lists"
+            :key="list.id"
+            :list="list"
+          />
+        </template>
       </ul>
     </div>
   </AppLayout>
@@ -34,13 +38,18 @@ interface ShoppingList {
 
 const newListName = ref('')
 const lists = ref<ShoppingList[]>([])
+const isLoading = ref(true)
 
 function loadLists() {
+  isLoading.value = true
   axios.get<ShoppingList[]>(API_URL)
     .then(response => {
       lists.value = response.data
     })
     .catch(error => console.error('Fehler beim Laden der Listen:', error))
+    .finally(() => {
+      isLoading.value = false
+    })
 }
 
 function createList() {

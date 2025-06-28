@@ -15,13 +15,17 @@
       </div>
 
       <ul>
-        <ItemRow
-          v-for="item in items"
-          :key="item.id"
-          :item="item"
-          @delete="deleteItem"
-          @toggle="togglePurchased"
-        />
+        <li v-if="isLoading">🔄 Artikel werden geladen...</li>
+        <li v-else-if="items.length === 0">📭 Keine Artikel in dieser Liste.</li>
+        <template v-else>
+          <ItemRow
+            v-for="item in items"
+            :key="item.id"
+            :item="item"
+            @delete="deleteItem"
+            @toggle="togglePurchased"
+          />
+        </template>
       </ul>
     </div>
   </AppLayout>
@@ -40,6 +44,7 @@ const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
 const route = useRoute()
 const currentListId = ref<number>(NaN)
 const listName = ref<string>('Meine Einkaufsliste')
+const isLoading = ref(true)
 
 interface Item {
   id: number
@@ -76,6 +81,7 @@ watchEffect(() => {
 })
 
 function loadData(listId: number) {
+  isLoading.value = true
   axios.get(`https://webtech-backend-o434.onrender.com/api/lists/${listId}`)
     .then((response) => {
       listName.value = response.data.name
@@ -97,6 +103,9 @@ function loadData(listId: number) {
     })
     .catch((err) => {
       console.error('Fehler beim Laden der Artikel:', err)
+    })
+    .finally(() => {
+      isLoading.value = false
     })
 }
 
