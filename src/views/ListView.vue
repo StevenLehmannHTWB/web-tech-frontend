@@ -24,7 +24,7 @@
             />
             {{ item.name }} ({{ item.category }})
           </label>
-          <button class="delete-button" @click="deleteItem(item)">🗑️</button>
+          <button class="delete-button" @click="deleteItem(item)">❌</button>
         </li>
       </ul>
     </div>

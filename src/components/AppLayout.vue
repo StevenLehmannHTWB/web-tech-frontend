@@ -1,7 +1,7 @@
 <template>
   <div class="layout">
     <header class="header">
-      <h2>🛒 Meine Einkaufsliste App</h2>
+      <h2>🛒 Meine Shopping App</h2>
       <router-link to="/" class="home-button">🏠 Home</router-link>
     </header>
     <main>
@@ -35,5 +35,9 @@
   text-decoration: none;
   font-weight: bold;
   color: #007acc;
+}
+
+h2 {
+  color: blue;
 }
 </style>

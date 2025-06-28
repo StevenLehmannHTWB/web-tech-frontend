@@ -60,6 +60,10 @@ onMounted(loadLists)
   max-width: 600px;
   margin: 2rem auto;
   font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 .input-section {
   display: flex;
@@ -78,6 +82,11 @@ ul {
   padding: 0;
 }
 li {
-  margin: 0.5rem 0;
+  background: #fff;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: blue;
 }
 </style>
