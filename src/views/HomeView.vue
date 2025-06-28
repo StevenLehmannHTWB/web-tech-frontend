@@ -9,8 +9,8 @@
       </div>
 
       <ul>
-        <li v-if="isLoading">🔄 Einkaufslisten werden geladen...</li>
-        <li v-else-if="lists.length === 0">📭 Noch keine Einkaufslisten vorhanden.</li>
+        <li v-if="isLoading">Einkaufslisten werden geladen...</li>
+        <li v-else-if="lists.length === 0">Noch keine Einkaufslisten vorhanden.</li>
         <template v-else>
           <ShoppingListItem
             v-for="list in lists"
@@ -99,7 +99,7 @@ li {
   margin-bottom: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 6px;
-  color: blue;
+  color: black;
 }
 h1 {
   color: black;

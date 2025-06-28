@@ -15,8 +15,8 @@
       </div>
 
       <ul>
-        <li v-if="isLoading">🔄 Artikel werden geladen...</li>
-        <li v-else-if="items.length === 0">📭 Keine Artikel in dieser Liste.</li>
+        <li v-if="isLoading">Artikel werden geladen...</li>
+        <li v-else-if="items.length === 0">Keine Artikel in dieser Liste.</li>
         <template v-else>
           <ItemRow
             v-for="item in items"
@@ -197,6 +197,10 @@ button {
 ul {
   list-style: none;
   padding: 0;
+}
+
+li {
+  color: black;
 }
 
 h1 {
