@@ -10,10 +10,9 @@
 
       <ul>
         <ShoppingListItem
-          v-for="list in shoppingLists"
+          v-for="list in lists"
           :key="list.id"
           :list="list"
-          @delete="deleteList"
         />
       </ul>
     </div>
