@@ -9,7 +9,7 @@ const routes = [
     component: HomeView
   },
   {
-    path: '/liste/:id',
+    path: '/lists/:id',
     name: 'List',
     component: ListView,
     props: true
