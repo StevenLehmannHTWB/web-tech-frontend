@@ -38,6 +38,6 @@
 }
 
 h2 {
-  color: blue;
+  color: #007acc;
 }
 </style>

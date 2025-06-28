@@ -207,6 +207,6 @@ h1 {
   color: red;
   font-size: 1.1rem;
   cursor: pointer;
-  margin-left: 1rem;
+  margin-right: 1rem;
 }
 </style>

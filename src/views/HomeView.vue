@@ -89,4 +89,7 @@ li {
   border-radius: 6px;
   color: blue;
 }
+h1 {
+  color: black;
+}
 </style>
