@@ -14,7 +14,7 @@
         <button @click="addItem">Hinzufügen</button>
       </div>
 
-      <ul>
+      <!--<ul>
         <ItemRow
           v-for="item in items"
           :key="item.id"
@@ -22,6 +22,10 @@
           @delete="deleteItem"
           @toggle="togglePurchased"
         />
+      </ul>
+      -->
+      <ul>
+        <li v-for="item in items" :key="item.id">{{ item.name }}</li>
       </ul>
     </div>
   </AppLayout>
