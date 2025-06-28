@@ -68,7 +68,7 @@ interface ServerItem {
 }
 
 const itemName = ref<string>('')
-const itemCategory = ref<string>('Obst')
+const itemCategory = ref<string>('Obst & Gemüse')
 const items = ref<Item[]>([])
 
 // Reaktiv auf Änderung von route.params.id reagieren
