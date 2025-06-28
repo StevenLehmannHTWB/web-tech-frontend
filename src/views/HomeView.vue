@@ -1,5 +1,5 @@
 <template>
-  </AppLayout>
+  <AppLayout>
     <div class="container">
       <h1>Alle Einkaufslisten</h1>
 
