@@ -1,21 +1,24 @@
 <template>
-  <div class="container">
-    <h1>Alle Einkaufslisten</h1>
+  </AppLayout>
+    <div class="container">
+      <h1>Alle Einkaufslisten</h1>
 
-    <div class="input-section">
-      <input v-model="newListName" type="text" placeholder="Neue Liste erstellen" />
-      <button @click="createList">Liste hinzufügen</button>
+      <div class="input-section">
+        <input v-model="newListName" type="text" placeholder="Neue Liste erstellen" />
+        <button @click="createList">Liste hinzufügen</button>
+      </div>
+
+      <ul>
+        <li v-for="list in lists" :key="list.id">
+          <router-link :to="`/liste/${list.id}`">{{ list.name }}</router-link>
+        </li>
+      </ul>
     </div>
-
-    <ul>
-      <li v-for="list in lists" :key="list.id">
-        <router-link :to="`/liste/${list.id}`">{{ list.name }}</router-link>
-      </li>
-    </ul>
-  </div>
+  </AppLayout>
 </template>
 
 <script setup lang="ts">
+import AppLayout from '@/components/AppLayout.vue'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 

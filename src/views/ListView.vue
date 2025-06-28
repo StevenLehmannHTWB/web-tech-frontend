@@ -1,35 +1,38 @@
 <template>
-  <div class="container">
-    <h1>Meine Einkaufsliste</h1>
+  <AppLayout>
+    <div class="container">
+      <h1>{{ listName }}</h1>
 
-    <div class="input-section">
-      <input v-model="itemName" type="text" placeholder="Produktname" />
-      <select v-model="itemCategory">
-        <option value="Obst">Obst</option>
-        <option value="Gemüse">Gemüse</option>
-        <option value="Getränke">Getränke</option>
-        <option value="Sonstiges">Sonstiges</option>
-      </select>
-      <button @click="addItem">Hinzufügen</button>
+      <div class="input-section">
+        <input v-model="itemName" type="text" placeholder="Produktname" />
+        <select v-model="itemCategory">
+          <option value="Obst">Obst</option>
+          <option value="Gemüse">Gemüse</option>
+          <option value="Getränke">Getränke</option>
+          <option value="Sonstiges">Sonstiges</option>
+        </select>
+        <button @click="addItem">Hinzufügen</button>
+      </div>
+
+      <ul>
+        <li v-for="item in items" :key="item.id">
+          <label :class="{ checked: item.purchased }">
+            <input
+              type="checkbox"
+              :checked="item.purchased"
+              @change="togglePurchased(item)"
+            />
+            {{ item.name }} ({{ item.category }})
+          </label>
+          <button class="delete-button" @click="deleteItem(item)">🗑️</button>
+        </li>
+      </ul>
     </div>
-
-    <ul>
-      <li v-for="item in items" :key="item.id">
-        <label :class="{ checked: item.purchased }">
-          <input
-            type="checkbox"
-            :checked="item.purchased"
-            @change="togglePurchased(item)"
-          />
-          {{ item.name }} ({{ item.category }})
-        </label>
-        <button class="delete-button" @click="deleteItem(item)">🗑️</button>
-      </li>
-    </ul>
-  </div>
+  </AppLayout>
 </template>
 
 <script lang="ts" setup>
+import AppLayout from '@/components/AppLayout.vue'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRoute } from 'vue-router'
@@ -37,6 +40,7 @@ import { useRoute } from 'vue-router'
 const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
 const route = useRoute()
 const currentListId = Number(route.params.id)
+const listName = ref<string>('Meine Einkaufsliste')
 
 interface Item {
   id: number
@@ -61,6 +65,14 @@ const itemCategory = ref<string>('Obst')
 const items = ref<Item[]>([])
 
 onMounted(() => {
+  axios.get(`https://webtech-backend-o434.onrender.com/api/lists/${currentListId}`)
+    .then((response) => {
+      listName.value = response.data.name
+    })
+    .catch((err) => {
+      console.error('Fehler beim Laden der Liste:', err)
+    })
+
   axios
     .get<ServerItem[]>(API_URL)
     .then((response) => {
