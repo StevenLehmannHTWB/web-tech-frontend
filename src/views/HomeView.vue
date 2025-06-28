@@ -9,15 +9,19 @@
       </div>
 
       <ul>
-        <li v-for="list in lists" :key="list.id">
-          <router-link :to="`/liste/${list.id}`">{{ list.name }}</router-link>
-        </li>
+        <ShoppingListItem
+          v-for="list in shoppingLists"
+          :key="list.id"
+          :list="list"
+          @delete="deleteList"
+        />
       </ul>
     </div>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
+import ShoppingListItem from '@/components/ShoppingListItem.vue'
 import AppLayout from '@/components/AppLayout.vue'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
