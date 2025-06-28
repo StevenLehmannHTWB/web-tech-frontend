@@ -6,9 +6,12 @@
       <div class="input-section">
         <input v-model="itemName" type="text" placeholder="Produktname" />
         <select v-model="itemCategory">
-          <option value="Obst">Obst</option>
-          <option value="Gemüse">Gemüse</option>
+          <option value="Obst & Gemüse">Obst & Gemüse</option>
+          <option value="Kühltheke">Kühltheke</option>
+          <option value="Tiefkühltheke">Tiefkühltheke</option>
+          <option value="Backwaren">Backwaren</option>
           <option value="Getränke">Getränke</option>
+          <option value="Haushalt">Haushalt</option>
           <option value="Sonstiges">Sonstiges</option>
         </select>
         <button @click="addItem">Hinzufügen</button>

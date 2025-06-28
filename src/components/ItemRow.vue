@@ -2,7 +2,7 @@
   <li class="item-row">
     <label :class="{ checked: item.purchased }">
       <input type="checkbox" :checked="item.purchased" @change="$emit('toggle', item)" />
-      {{ item.name }} ({{ item.category }})
+      ({{ item.category }}) {{ item.name }}
     </label>
     <button class="delete-button" @click="$emit('delete', item)">❌</button>
   </li>
