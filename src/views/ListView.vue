@@ -1,7 +1,10 @@
 <template>
   <AppLayout>
     <div class="container">
-      <h1>{{ listName }}</h1>
+      <div class="header">
+        <h1>{{ listName }}</h1>
+        <button class="delete-list-button" @click="confirmDeleteList">❌ Liste löschen</button>
+      </div>
 
       <div class="input-section">
         <input v-model="itemName" type="text" placeholder="Produktname" />
@@ -36,15 +39,18 @@
 
 <script lang="ts" setup>
 import { ref, watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 import AppLayout from '@/components/AppLayout.vue'
 import ItemRow from '@/components/ItemRow.vue'
 
-const API_URL = 'https://webtech-backend-o434.onrender.com/api/items'
-
 const route = useRoute()
+const router = useRouter()
+
+const API_ITEMS = 'https://webtech-backend-o434.onrender.com/api/items'
+const API_LISTS = 'https://webtech-backend-o434.onrender.com/api/lists'
+
 const currentListId = ref<number>(NaN)
 const listName = ref<string>('Meine Einkaufsliste')
 const isLoading = ref(true)
@@ -71,7 +77,6 @@ const itemName = ref<string>('')
 const itemCategory = ref<string>('Obst & Gemüse')
 const items = ref<Item[]>([])
 
-// Reaktiv auf Änderung von route.params.id reagieren
 watchEffect(() => {
   const idParam = route.params.id
   if (typeof idParam === 'string') {
@@ -85,7 +90,7 @@ watchEffect(() => {
 
 function loadData(listId: number) {
   isLoading.value = true
-  axios.get(`https://webtech-backend-o434.onrender.com/api/lists/${listId}`)
+  axios.get(`${API_LISTS}/${listId}`)
     .then((response) => {
       listName.value = response.data.name
     })
@@ -93,7 +98,7 @@ function loadData(listId: number) {
       console.error('Fehler beim Laden der Liste:', err)
     })
 
-  axios.get<ServerItem[]>(API_URL)
+  axios.get<ServerItem[]>(API_ITEMS)
     .then((response) => {
       const filtered = response.data.filter((item) => item.shoppingListId === listId)
       items.value = filtered.map((item): Item => ({
@@ -116,7 +121,7 @@ function addItem() {
   const name = itemName.value.trim()
   if (!name || items.value.find((i) => i.name === name)) return
 
-  axios.post<ServerItem>(API_URL, {
+  axios.post<ServerItem>(API_ITEMS, {
     name,
     category: itemCategory.value,
     quantity: 1,
@@ -141,7 +146,7 @@ function addItem() {
 
 function togglePurchased(item: Item) {
   const updated = !item.purchased
-  axios.put(`${API_URL}/${item.id}`, {
+  axios.put(`${API_ITEMS}/${item.id}`, {
     name: item.name,
     category: item.category,
     quantity: 1,
@@ -157,12 +162,25 @@ function togglePurchased(item: Item) {
 }
 
 function deleteItem(item: Item) {
-  axios.delete(`${API_URL}/${item.id}`)
+  axios.delete(`${API_ITEMS}/${item.id}`)
     .then(() => {
       items.value = items.value.filter((i) => i.id !== item.id)
     })
     .catch((err) => {
       console.error('Fehler beim Löschen:', err)
+    })
+}
+
+function confirmDeleteList() {
+  const confirm = window.confirm(`Möchtest du die Liste "${listName.value}" und alle zugehörigen Artikel wirklich löschen?`)
+  if (!confirm) return
+
+  axios.delete(`${API_LISTS}/${currentListId.value}`)
+    .then(() => {
+      router.push('/')
+    })
+    .catch((err) => {
+      console.error('Fehler beim Löschen der Liste:', err)
     })
 }
 </script>
@@ -208,5 +226,20 @@ li {
 
 h1 {
   color: black;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.delete-list-button {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 1rem;
+  cursor: pointer;
 }
 </style>
