@@ -2,7 +2,9 @@
   <li class="item-row">
     <label :class="{ checked: item.purchased }">
       <input type="checkbox" :checked="item.purchased" @change="$emit('toggle', item)" />
-      ({{ item.category }}) {{ item.name }}
+      {{ item.name }} ({{ item.category }}) –
+      {{ item.quantity }} x {{ item.price ? item.price.toFixed(2) : "0.00" }} €
+      <span class="total">= {{ (item.quantity * (item.price || 0)).toFixed(2) }} €</span>
     </label>
     <button class="delete-button" @click="$emit('delete', item)">❌</button>
   </li>
@@ -14,6 +16,8 @@ defineProps<{
     id: number
     name: string
     category: string
+    quantity: number
+    price: number
     purchased: boolean
     shoppingListId: number
   }
@@ -47,7 +51,8 @@ defineEmits(['delete', 'toggle'])
   cursor: pointer;
 }
 
-label {
-  color: black;
+.total {
+  margin-left: 10px;
+  font-weight: bold;
 }
 </style>

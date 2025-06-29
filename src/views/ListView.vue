@@ -8,6 +8,8 @@
 
       <div class="input-section">
         <input v-model="itemName" type="text" placeholder="Produktname" />
+        <input v-model.number="itemQuantity" type="number" min="1" placeholder="Menge" style="width:80px" />
+        <input v-model.number="itemPrice" type="number" min="0" step="0.01" placeholder="Stückpreis (€)" style="width:100px" />
         <select v-model="itemCategory">
           <option value="Obst & Gemüse">Obst & Gemüse</option>
           <option value="Kühltheke">Kühltheke</option>
@@ -33,12 +35,16 @@
           />
         </template>
       </ul>
+
+      <div v-if="items.length > 0" style="margin-top:1rem;font-weight:bold;">
+        Gesamtpreis: {{ totalPrice.toFixed(2) }} €
+      </div>
     </div>
   </AppLayout>
 </template>
 
 <script lang="ts" setup>
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -59,22 +65,18 @@ interface Item {
   id: number
   name: string
   category: string
+  quantity: number
+  price: number
   purchased: boolean
   shoppingListId: number
 }
 
-interface ServerItem {
-  id: number
-  name: string
-  category: string
-  quantity: number
-  purchased: boolean
-  price: number
-  shoppingListId: number
-}
+interface ServerItem extends Item {}
 
 const itemName = ref<string>('')
 const itemCategory = ref<string>('Obst & Gemüse')
+const itemQuantity = ref<number>(1)
+const itemPrice = ref<number>(0)
 const items = ref<Item[]>([])
 
 watchEffect(() => {
@@ -105,6 +107,8 @@ function loadData(listId: number) {
         id: item.id,
         name: item.name,
         category: item.category,
+        quantity: item.quantity,
+        price: item.price,
         purchased: item.purchased,
         shoppingListId: item.shoppingListId,
       }))
@@ -124,7 +128,8 @@ function addItem() {
   axios.post<ServerItem>(API_ITEMS, {
     name,
     category: itemCategory.value,
-    quantity: 1,
+    quantity: itemQuantity.value,
+    price: itemPrice.value,
     purchased: false,
     shoppingListId: currentListId.value,
   })
@@ -134,10 +139,14 @@ function addItem() {
         id: newItem.id,
         name: newItem.name,
         category: newItem.category,
+        quantity: newItem.quantity,
+        price: newItem.price,
         purchased: newItem.purchased,
         shoppingListId: newItem.shoppingListId,
       })
       itemName.value = ''
+      itemQuantity.value = 1
+      itemPrice.value = 0
     })
     .catch((err) => {
       console.error('Fehler beim Speichern des Artikels:', err)
@@ -149,7 +158,8 @@ function togglePurchased(item: Item) {
   axios.put(`${API_ITEMS}/${item.id}`, {
     name: item.name,
     category: item.category,
-    quantity: 1,
+    quantity: item.quantity,
+    price: item.price,
     purchased: updated,
     shoppingListId: item.shoppingListId,
   })
@@ -162,12 +172,13 @@ function togglePurchased(item: Item) {
 }
 
 function deleteItem(item: Item) {
+  const originalItems = [...items.value];
+  items.value = items.value.filter((i) => i.id !== item.id)
   axios.delete(`${API_ITEMS}/${item.id}`)
-    .then(() => {
-      items.value = items.value.filter((i) => i.id !== item.id)
-    })
     .catch((err) => {
+      items.value = originalItems;
       console.error('Fehler beim Löschen:', err)
+      alert('Konnte Artikel nicht löschen!');
     })
 }
 
@@ -183,6 +194,12 @@ function confirmDeleteList() {
       console.error('Fehler beim Löschen der Liste:', err)
     })
 }
+
+const totalPrice = computed(() => {
+  return items.value.reduce((sum, item) =>
+    sum + (item.quantity * (item.price || 0)), 0
+  )
+})
 </script>
 
 <style scoped>
@@ -203,10 +220,15 @@ function confirmDeleteList() {
 }
 
 input[type='text'],
+input[type='number'],
 select {
   padding: 0.5rem;
   font-size: 1rem;
   flex: 1;
+}
+
+input[type='number'] {
+  max-width: 100px;
 }
 
 button {
