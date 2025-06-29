@@ -37,8 +37,14 @@
         </template>
       </ul>
 
-      <div v-if="items.length > 0" style="margin-top:1rem;font-weight:bold;color:black;">
-        Gesamtpreis: {{ totalPrice.toFixed(2) }} €
+      <div v-if="items.length > 0" class="footer-row">
+        <div class="export-buttons">
+          <button @click="exportAsText">Export als Text</button>
+          <button @click="exportAsCSV">Export als CSV</button>
+        </div>
+        <div class="total-price">
+          Gesamtpreis: {{ totalPrice.toFixed(2) }} €
+        </div>
       </div>
     </div>
   </AppLayout>
@@ -193,7 +199,6 @@ function updateItem(updatedItem: Item) {
     shoppingListId: updatedItem.shoppingListId,
   })
     .then(() => {
-      // Update im State
       const idx = items.value.findIndex(i => i.id === updatedItem.id)
       if (idx !== -1) {
         items.value[idx] = { ...updatedItem }
@@ -222,6 +227,33 @@ const totalPrice = computed(() => {
     sum + (item.quantity * (item.price || 0)), 0
   )
 })
+
+// --- Export als Text oder CSV ---
+function exportAsText() {
+  const lines = items.value.map(item =>
+    `${item.quantity} x ${item.name} (${item.category}) à ${item.price?.toFixed(2) ?? "0.00"} €`
+  )
+  const content = `Einkaufsliste: ${listName.value}\n\n${lines.join('\n')}\n\nGesamt: ${totalPrice.value.toFixed(2)} €`
+  downloadFile(content, `${listName.value}.txt`, 'text/plain')
+}
+
+function exportAsCSV() {
+  const header = 'Name;Kategorie;Menge;Preis pro Stück (€);Gekauft'
+  const rows = items.value.map(item =>
+    `"${item.name}";"${item.category}";${item.quantity};${item.price?.toFixed(2) ?? "0.00"};${item.purchased ? "Ja" : "Nein"}`
+  )
+  const csv = [header, ...rows].join('\n')
+  downloadFile(csv, `${listName.value}.csv`, 'text/csv')
+}
+
+function downloadFile(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(link.href)
+}
 </script>
 
 <style scoped>
@@ -285,5 +317,24 @@ h1 {
   color: red;
   font-size: 1rem;
   cursor: pointer;
+}
+
+.footer-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.export-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.total-price {
+  font-weight: bold;
+  color: black;
 }
 </style>
