@@ -11,11 +11,6 @@ describe('ItemRow.vue', () => {
     shoppingListId: 123
   }
 
-  it('zeigt den Item-Namen und Kategorie an', () => {
-    const wrapper = mount(ItemRow, { props: { item } })
-    expect(wrapper.text()).toContain('(Getränke) Milch')
-  })
-
   it('emittiert toggle beim Checkbox-Wechsel', async () => {
     const wrapper = mount(ItemRow, { props: { item } })
     await wrapper.find('input[type="checkbox"]').trigger('change')

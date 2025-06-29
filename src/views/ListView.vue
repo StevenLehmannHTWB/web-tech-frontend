@@ -38,12 +38,12 @@
       </ul>
 
       <div v-if="items.length > 0" class="footer-row">
+        <div class="total-price">
+          Gesamtpreis: {{ totalPrice.toFixed(2) }} €
+        </div>
         <div class="export-buttons">
           <button @click="exportAsText">Export als Text</button>
           <button @click="exportAsCSV">Export als CSV</button>
-        </div>
-        <div class="total-price">
-          Gesamtpreis: {{ totalPrice.toFixed(2) }} €
         </div>
       </div>
     </div>
@@ -321,7 +321,7 @@ h1 {
 
 .footer-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 2rem;
   margin-top: 2rem;
