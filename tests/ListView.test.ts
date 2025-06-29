@@ -3,11 +3,15 @@ import { flushPromises, mount } from '@vue/test-utils'
 import ListView from '@/views/ListView.vue'
 import axios from 'axios'
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({
-    params: { id: '123' }
-  })
-}))
+vi.mock('vue-router', async () => {
+  const actual = await vi.importActual<typeof import('vue-router')>('vue-router')
+  return {
+    ...actual,
+    useRouter: () => ({
+      push: vi.fn(),
+    }),
+  }
+})
 
 vi.mock('axios')
 const mockedAxios = axios as any
