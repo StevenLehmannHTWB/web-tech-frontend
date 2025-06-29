@@ -16,6 +16,7 @@
             v-for="list in lists"
             :key="list.id"
             :list="list"
+            @delete="removeList"
           />
         </template>
       </ul>
@@ -62,6 +63,10 @@ function createList() {
       newListName.value = ''
     })
     .catch(error => console.error('Fehler beim Erstellen der Liste:', error))
+}
+
+function removeList(id: number) {
+  lists.value = lists.value.filter(list => list.id !== id)
 }
 
 onMounted(loadLists)
