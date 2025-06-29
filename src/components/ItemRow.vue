@@ -78,7 +78,7 @@ const emit = defineEmits(['delete', 'toggle', 'update'])
 const localItem = ref({ ...props.item })
 const editField = ref('') // 'name', 'quantity', 'price' oder ''
 
-// Reactivity: Update localItem wenn neues item reingereicht wird
+// Update localItem wenn neues item reingereicht wird
 watch(
   () => props.item,
   (newVal: typeof props.item) => {

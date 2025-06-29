@@ -32,6 +32,7 @@
             :item="item"
             @delete="deleteItem"
             @toggle="togglePurchased"
+            @update="updateItem"
           />
         </template>
       </ul>
