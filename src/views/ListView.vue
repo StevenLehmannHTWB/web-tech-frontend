@@ -8,8 +8,8 @@
 
       <div class="input-section">
         <input v-model="itemName" type="text" placeholder="Produktname" />
-        <input v-model.number="itemQuantity" type="number" min="1" placeholder="Menge" style="width:80px" />
-        <input v-model.number="itemPrice" type="number" min="0" step="0.01" placeholder="Stückpreis (€)" style="width:100px" />
+        <input v-model.number="itemQuantity" type="number" min="1" placeholder="Menge" style="width:60px" />
+        <input v-model.number="itemPrice" type="number" min="0" step="0.01" placeholder="Stückpreis (€)" style="width:80px" />
         <select v-model="itemCategory">
           <option value="Obst & Gemüse">Obst & Gemüse</option>
           <option value="Kühltheke">Kühltheke</option>
@@ -179,6 +179,27 @@ function deleteItem(item: Item) {
       items.value = originalItems;
       console.error('Fehler beim Löschen:', err)
       alert('Konnte Artikel nicht löschen!');
+    })
+}
+
+function updateItem(updatedItem: Item) {
+  axios.put(`${API_ITEMS}/${updatedItem.id}`, {
+    name: updatedItem.name,
+    category: updatedItem.category,
+    quantity: updatedItem.quantity,
+    price: updatedItem.price,
+    purchased: updatedItem.purchased,
+    shoppingListId: updatedItem.shoppingListId,
+  })
+    .then(() => {
+      // Update im State
+      const idx = items.value.findIndex(i => i.id === updatedItem.id)
+      if (idx !== -1) {
+        items.value[idx] = { ...updatedItem }
+      }
+    })
+    .catch((err) => {
+      console.error('Fehler beim Bearbeiten:', err)
     })
 }
 
