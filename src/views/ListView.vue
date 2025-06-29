@@ -36,7 +36,7 @@
         </template>
       </ul>
 
-      <div v-if="items.length > 0" style="margin-top:1rem;font-weight:bold;">
+      <div v-if="items.length > 0" style="margin-top:1rem;font-weight:bold;color:black;">
         Gesamtpreis: {{ totalPrice.toFixed(2) }} €
       </div>
     </div>
@@ -204,7 +204,7 @@ const totalPrice = computed(() => {
 
 <style scoped>
 .container {
-  max-width: 600px;
+  max-width: 900px;
   margin: 2rem auto;
   font-family: Arial, sans-serif;
   background: #f9f9f9;
